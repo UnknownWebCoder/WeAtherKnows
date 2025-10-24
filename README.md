@@ -1,1 +1,129 @@
+<html>
+<head>
+  <title>Weather Knows the 3 C's</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to top, #ccefff, #ffffff);
+      text-align: center;
+      padding: 30px;
+    }
+    h1 {
+      color: #2b6cb0;
+    }
+    .section {
+      margin: 20px 0;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      background-color: #f8f9fa;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    canvas {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
 
+  <h1>🌤️ Weather Knows the 3 C's</h1>
+  <center><h2>Visualizing Weather Through Information Design</h2></center>
+  <p>A student-focused weather site containing live forecast data so you can plan safer, smarter, and greener.</p>
+
+  <nav>
+    <a href="#About">About</a>
+  </nav>
+
+  <div class="section" id="cloud-section">
+    <h2>☁️ Cloud Status</h2>
+    <p id="cloud-status">Loading...</p>
+  </div>
+
+  <div class="section" id="chart-section">
+    <h2>📊 Weekly Temperature Chart</h2>
+    <canvas id="tempChart" width="400" height="200"></canvas>
+  </div>
+	
+  <div class="section" id="clarity-section">
+    <h2>🔍 Clarity Report</h2>
+    <p id="clarity-report">Loading...</p>
+  </div>
+
+  <script>
+    // --- Setup ---
+    const apiKey = "85a4ce8b9cbb48af8c641914252310"; // Your WorldWeatherOnline API key
+    const city = "Manila"; // You can change this to any city
+
+    const clarityMessages = {
+      "Clear": "The sky is clear and bright. Perfect for outdoor activities!",
+      "Partly Cloudy": "Some clouds in the sky, but it’s still a nice day.",
+      "Cloudy": "The sky is fully covered with clouds. Might feel a bit gloomy.",
+      "Stormy": "Storms expected. Best to stay indoors and safe."
+    };
+
+    const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const ctx = document.getElementById('tempChart').getContext('2d');
+    const tempChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: "Temperature (°C)",
+          data: [],
+          backgroundColor: "rgba(135,206,250, 0.2)",
+          borderColor: "rgba(30,144,255, 1)",
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3,
+          pointRadius: 5,
+          pointBackgroundColor: "#1E90FF"
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: false }
+        }
+      }
+    });
+
+    // --- Fetch Real Weather Data ---
+    async function fetchWeather() {
+      try {
+        const url = `https://api.worldweatheronline.com/premium/v1/weather.ashx?key=${apiKey}&q=${city}&format=json&num_of_days=7`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Weather data unavailable");
+        const data = await response.json();
+
+        const current = data.data.current_condition[0];
+        const weatherDesc = current.weatherDesc[0].value;
+        const avgTempC = parseFloat(current.temp_C);
+
+        // Update cloud and clarity
+        document.getElementById("cloud-status").textContent = weatherDesc;
+
+        let message = clarityMessages["Cloudy"];
+        if (weatherDesc.includes("Clear")) message = clarityMessages["Clear"];
+        else if (weatherDesc.includes("Partly")) message = clarityMessages["Partly Cloudy"];
+        else if (weatherDesc.includes("Rain") || weatherDesc.includes("Storm")) message = clarityMessages["Stormy"];
+        document.getElementById("clarity-report").textContent = message;
+
+        // Get forecast temps
+        const days = data.data.weather.map(day => parseFloat(day.avgtempC));
+        tempChart.data.datasets[0].data = days;
+        tempChart.update();
+
+      } catch (error) {
+        document.getElementById("cloud-status").textContent = "Unable to fetch weather data.";
+        document.getElementById("clarity-report").textContent = "Please check your API key or internet connection.";
+        console.error("Weather fetch error:", error);
+      }
+    }
+
+    fetchWeather();
+  </script>
+
+</body>
+</html>

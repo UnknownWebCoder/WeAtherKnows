@@ -34,6 +34,11 @@
 
   <nav>
     <a href="#About">About</a>
+	  <p><h1><b>What Is WeAtherKnows All About?</b></h1>
+     <br>
+		  <h3>This website is developed for a HTML project of Palawan State University's Information Technology students.
+		  We created this as a real-time accurate weather updates for users to have guide for their travel plans</h3
+	  </p>
   </nav>
 
   <div class="section" id="cloud-section">
@@ -52,8 +57,8 @@
   </div>
 
   <script>
-    // --- Setup ---
-    const apiKey = "85a4ce8b9cbb48af8c641914252310";
+    // this is my api key Setup got in worldweatheronline website
+    const apiKey = "6214843141da455fa6c235320252610";
     const city = "Puerto Princesa";
 
     const clarityMessages = {
@@ -89,7 +94,7 @@
       }
     });
 
-    // --- Fetch Real Weather Data ---
+    // this will Fetch the Real Weather Data
     async function fetchWeather() {
       try {
         const url = `https://api.worldweatheronline.com/premium/v1/weather.ashx?key=${apiKey}&q=${city}&format=json&num_of_days=7`;
@@ -101,7 +106,7 @@
         const weatherDesc = current.weatherDesc[0].value;
         const avgTempC = parseFloat(current.temp_C);
 
-        // Update cloud and clarity
+        // this is for Update about cloud and clarity
         document.getElementById("cloud-status").textContent = weatherDesc;
 
         let message = clarityMessages["Cloudy"];
@@ -110,7 +115,7 @@
         else if (weatherDesc.includes("Rain") || weatherDesc.includes("Storm")) message = clarityMessages["Stormy"];
         document.getElementById("clarity-report").textContent = message;
 
-        // Get forecast temps
+        // this will Get forecast temperature
         const days = data.data.weather.map(day => parseFloat(day.avgtempC));
         tempChart.data.datasets[0].data = days;
         tempChart.update();
@@ -127,4 +132,5 @@
 
 </body>
 </html>
+
 

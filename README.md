@@ -48,8 +48,8 @@
   </div>
 
   <script>
-    // This is my API key setup from the World Weather Online Website
-    const apiKey = "85a4ce8b9cbb48af8c641914252310";
+    // This is my API key setup from the World Weather Online website
+    const apiKey = "6214843141da455fa6c235320252610";
     const city = "Puerto Princesa";
 
     const clarityMessages = {
@@ -90,8 +90,7 @@
     // This fetches the real 7-day weather data from the API
     async function fetchWeather() {
       try {
-        const url = `https://api.worldweatheronline.com/premium/v1/weather.ashxkey=${apiKey}&q=${city}&format=json&num_of_days=7`;
-		`;
+        const url = `https://api.worldweatheronline.com/premium/v1/weather.ashx?key=${apiKey}&q=${city}&format=json&num_of_days=7`;
         const response = await fetch(url);
         if (!response.ok) throw new Error("Weather data unavailable");
         const data = await response.json();

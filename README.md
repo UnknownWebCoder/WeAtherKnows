@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html>
 <head>
   <title>Weather Knows the 3 C's</title>
@@ -49,76 +48,77 @@
   </div>
 
   <script>
-    const apiKey = "bad60619ca006eb7157e08b43a400527";
-    const lat = 9.7401;  // Puerto Princesa latitude
-    const lon = 118.7350; // Puerto Princesa longitude
+  const lat = 9.7401;   // Puerto Princesa latitude
+  const lon = 118.7350; // Puerto Princesa longitude
 
-    const clarityMessages = {
-      "Clear": "The sky is clear and bright. Perfect for outdoor activities!",
-      "Partly Cloudy": "Some clouds in the sky, but it’s still a nice day.",
-      "Clouds": "The sky is fully covered with clouds. Might feel a bit gloomy.",
-      "Rain": "Rain is expected. Best to stay indoors and safe.",
-      "Storm": "Storms expected. Stay safe indoors."
-    };
+  const clarityMessages = {
+    "Clear": "The sky is clear and bright. Perfect for outdoor activities!",
+    "Partly Cloudy": "Some clouds in the sky, but it’s still a nice day.",
+    "Cloudy": "The sky is fully covered with clouds. Might feel a bit gloomy.",
+    "Rain": "Rain is expected. Best to stay indoors and safe.",
+    "Storm": "Storms expected. Stay safe indoors."
+  };
 
-    const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    const ctx = document.getElementById('tempChart').getContext('2d');
+  const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const ctx = document.getElementById('tempChart').getContext('2d');
 
-    const tempChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: "Temperature (°C)",
-          data: [],
-          backgroundColor: "blue",
-          borderColor: "blue",
-          borderWidth: 2,
-          fill: true,
-          tension: 0.3,
-          pointRadius: 5,
-          pointBackgroundColor: "blue"
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: { y: { beginAtZero: false } }
-      }
-    });
-
-    async function fetchWeather() {
-      try {
-        const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,hourly,alerts&units=metric&appid=${apiKey}`;
-        const response = await fetch(url);
-        if (!response.ok) throw new Error("Weather data unavailable");
-        const data = await response.json();
-
-        // Current weather
-        const weatherMain = data.daily[0].weather[0].main;
-        document.getElementById("cloud-status").textContent = weatherMain;
-
-        let message = clarityMessages["Clouds"];
-        if (weatherMain.includes("Clear")) message = clarityMessages["Clear"];
-        else if (weatherMain.includes("Partly")) message = clarityMessages["Partly Cloudy"];
-        else if (weatherMain.includes("Rain")) message = clarityMessages["Rain"];
-        else if (weatherMain.includes("Storm")) message = clarityMessages["Storm"];
-        document.getElementById("clarity-report").textContent = message;
-
-        // 7-day average temperatures
-        const temps = data.daily.slice(0,7).map(day => day.temp.day);
-        tempChart.data.datasets[0].data = temps;
-        tempChart.update();
-
-      } catch (error) {
-        document.getElementById("cloud-status").textContent = "Unable to fetch weather data.";
-        document.getElementById("clarity-report").textContent = "Please check your API key or internet connection.";
-        console.error("Weather fetch error:", error);
-      }
+  const tempChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Temperature (°C)",
+        data: [],
+        backgroundColor: "blue",
+        borderColor: "blue",
+        borderWidth: 2,
+        fill: true,
+        tension: 0.3,
+        pointRadius: 5,
+        pointBackgroundColor: "blue"
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: { y: { beginAtZero: false } }
     }
+  });
 
-    fetchWeather();
+  async function fetchWeather() {
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=Asia/Manila`;
+
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Weather data unavailable");
+      const data = await response.json();
+
+      // Current weather description using weather codes
+      const weatherCode = data.current_weather.weathercode;
+
+      let weatherDesc = "Clear";
+      if ([1,2,3].includes(weatherCode)) weatherDesc = "Partly Cloudy";
+      if ([45,48].includes(weatherCode)) weatherDesc = "Cloudy";
+      if ([51,53,55,61,63,65,80,81,82].includes(weatherCode)) weatherDesc = "Rain";
+      if ([95,96,99].includes(weatherCode)) weatherDesc = "Storm";
+
+      document.getElementById("cloud-status").textContent = weatherDesc;
+      document.getElementById("clarity-report").textContent = clarityMessages[weatherDesc];
+
+      // Weekly temperatures (use max temp for the chart)
+      const temps = data.daily.temperature_2m_max.slice(0, 7);
+
+      tempChart.data.datasets[0].data = temps;
+      tempChart.update();
+
+    } catch (error) {
+      document.getElementById("cloud-status").textContent = "Unable to fetch weather data.";
+      document.getElementById("clarity-report").textContent = "Please check your internet connection.";
+      console.error("Weather fetch error:", error);
+    }
+  }
+
+  fetchWeather();
   </script>
-
+  
 </body>
 </html>
-

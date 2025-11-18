@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
   <title>Weather Knows the 3 C's</title>
@@ -31,7 +32,7 @@
   <h1>🌤️ Weather Knows the 3 C's</h1>
   <center><h2>Visualizing Weather Through Information Design</h2></center>
   <p>A student-focused weather site containing live forecast data so you can plan safer, smarter, and greener.</p>
-   
+    
   <div class="section" id="cloud-section">
     <h2>☁️ Cloud Status</h2>
     <p id="cloud-status">Loading...</p>
@@ -54,8 +55,8 @@
   const clarityMessages = {
     "Clear": "The sky is clear and bright. Perfect for outdoor activities!",
     "Partly Cloudy": "Some clouds in the sky, but it’s still a nice day.",
-    "Cloudy": "The sky is fully covered with clouds. Might feel a bit gloomy.",
-    "Rain": "Rain is expected. Best to stay indoors and safe.",
+    "Cloudy": "The sky is fully covered with clouds.",
+    "Rain": "Rain is expected. Bring an umbrella!",
     "Storm": "Storms expected. Stay safe indoors."
   };
 
@@ -104,8 +105,11 @@
       document.getElementById("cloud-status").textContent = weatherDesc;
       document.getElementById("clarity-report").textContent = clarityMessages[weatherDesc];
 
-      // Weekly temperatures (use max temp for the chart)
-      const temps = data.daily.temperature_2m_max.slice(0, 7);
+      // FIXED: More realistic weekly temperatures (average of min+max)
+      const temps = data.daily.temperature_2m_max.map((max, i) => {
+        const min = data.daily.temperature_2m_min[i];
+        return (max + min) / 2;  // average temp
+      });
 
       tempChart.data.datasets[0].data = temps;
       tempChart.update();
@@ -119,6 +123,5 @@
 
   fetchWeather();
   </script>
-  
 </body>
 </html>

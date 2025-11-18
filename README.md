@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
   <title>Weather Knows the 3 C's</title>
@@ -31,7 +32,7 @@
   <h1>🌤️ Weather Knows the 3 C's</h1>
   <center><h2>Visualizing Weather Through Information Design</h2></center>
   <p>A student-focused weather site containing live forecast data so you can plan safer, smarter, and greener.</p>
-		 
+   
   <div class="section" id="cloud-section">
     <h2>☁️ Cloud Status</h2>
     <p id="cloud-status">Loading...</p>
@@ -41,87 +42,98 @@
     <h2>📊 Weekly Temperature Chart</h2>
     <canvas id="tempChart" width="400" height="200"></canvas>
   </div>
-	
+  
   <div class="section" id="clarity-section">
     <h2>🔍 Clarity Report</h2>
     <p id="clarity-report">Loading...</p>
   </div>
 
   <script>
-    // This is my API key setup from the World Weather Online website
-    const apiKey = "6214843141da455fa6c235320252610";
-    const city = "Puerto Princesa";
+const apiKey = "bad60619ca006eb7157e08b43a400527";
+const lat = 9.7401;  // Puerto Princesa latitude
+const lon = 118.7350; // Puerto Princesa longitude
 
-    const clarityMessages = {
-      "Clear": "The sky is clear and bright. Perfect for outdoor activities!",
-      "Partly Cloudy": "Some clouds in the sky, but it’s still a nice day.",
-      "Cloudy": "The sky is fully covered with clouds. Might feel a bit gloomy.",
-      "Stormy": "Storms expected. Best to stay indoors and safe."
-    };
+const clarityMessages = {
+  "Clear": "The sky is clear and bright. Perfect for outdoor activities!",
+  "Clouds": "Some clouds in the sky, but it’s still a nice day.",
+  "Rain": "Rain is expected. Best to stay indoors and safe.",
+  "Storm": "Storms expected. Stay safe indoors."
+};
 
-    const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    const ctx = document.getElementById('tempChart').getContext('2d');
+// Weekday labels
+const labels = [];
+const today = new Date();
+for(let i = 0; i < 7; i++){
+  const day = new Date();
+  day.setDate(today.getDate() + i);
+  labels.push(day.toLocaleDateString('en-US', { weekday: 'short' }));
+}
 
-    // This creates the temperature chart and prepares it for updating
-    const tempChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: "Temperature (°C)",
-          data: [],
-          backgroundColor: "skyblue",
-          borderColor: "dodgerblue",
-          borderWidth: 2,
-          fill: true,
-          tension: 0.3,
-          pointRadius: 5,
-          pointBackgroundColor: "blue"
-        }]
+const ctx = document.getElementById('tempChart').getContext('2d');
+const tempChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: labels,
+    datasets: [
+      {
+        label: "Max Temp (°C)",
+        data: [],
+        backgroundColor: "red",
+        borderColor: "red",
+        borderWidth: 2,
+        fill: true,
+        tension: 0.3,
+        pointRadius: 5
       },
-      options: {
-        responsive: true,
-        scales: {
-          y: { beginAtZero: false }
-        }
+      {
+        label: "Min Temp (°C)",
+        data: [],
+        backgroundColor: "blue",
+        borderColor: "blue",
+        borderWidth: 2,
+        fill: true,
+        tension: 0.3,
+        pointRadius: 5
       }
-    });
+    ]
+  },
+  options: {
+    responsive: true,
+    scales: { y: { beginAtZero: false } }
+  }
+});
 
-    // This fetches the real 7-day weather data from the API
-    async function fetchWeather() {
-      try {
-        const url = `https://api.worldweatheronline.com/premium/v1/weather.ashx?key=${apiKey}&q=${city}&format=json&num_of_days=7`;
-        const response = await fetch(url);
-        if (!response.ok) throw new Error("Weather data unavailable");
-        const data = await response.json();
+async function fetchWeather() {
+  try {
+    const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,hourly,alerts&units=metric&appid=${apiKey}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Weather data unavailable");
+    const data = await response.json();
 
-        const current = data.data.current_condition[0];
-        const weatherDesc = current.weatherDesc[0].value;
-        const avgTempC = parseFloat(current.temp_C);
+    // Current weather
+    const weatherMain = data.daily[0].weather[0].main;
+    document.getElementById("cloud-status").textContent = weatherMain;
 
-        // This updates the cloud description and clarity message in the webpage
-        document.getElementById("cloud-status").textContent = weatherDesc;
+    let message = clarityMessages["Clouds"];
+    if (weatherMain.includes("Clear")) message = clarityMessages["Clear"];
+    else if (weatherMain.includes("Rain")) message = clarityMessages["Rain"];
+    else if (weatherMain.includes("Storm")) message = clarityMessages["Storm"];
+    document.getElementById("clarity-report").textContent = message;
 
-        let message = clarityMessages["Cloudy"];
-        if (weatherDesc.includes("Clear")) message = clarityMessages["Clear"];
-        else if (weatherDesc.includes("Partly")) message = clarityMessages["Partly Cloudy"];
-        else if (weatherDesc.includes("Rain") || weatherDesc.includes("Storm")) message = clarityMessages["Stormy"];
-        document.getElementById("clarity-report").textContent = message;
+    // 7-day max and min temperatures
+    const maxTemps = data.daily.slice(0,7).map(day => day.temp.max);
+    const minTemps = data.daily.slice(0,7).map(day => day.temp.min);
 
-        // This updates the chart with 7-day forecast temperatures
-        const days = data.data.weather.map(day => parseFloat(day.avgtempC));
-        tempChart.data.datasets[0].data = days;
-        tempChart.update();
+    tempChart.data.datasets[0].data = maxTemps;
+    tempChart.data.datasets[1].data = minTemps;
+    tempChart.update();
 
-      } catch (error) {
-        document.getElementById("cloud-status").textContent = "Unable to fetch weather data.";
-        document.getElementById("clarity-report").textContent = "Please check your API key or internet connection.";
-        console.error("Weather fetch error:", error);
-      }
-    }
+  } catch (error) {
+    document.getElementById("cloud-status").textContent = "Unable to fetch weather data.";
+    document.getElementById("clarity-report").textContent = "Please check your API key or internet connection.";
+    console.error("Weather fetch error:", error);
+  }
+}
 
-    fetchWeather();
-  </script>
-
-</body>
-</html>
+fetchWeather();
+</script>

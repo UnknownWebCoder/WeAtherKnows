@@ -47,88 +47,76 @@
     <p id="clarity-report">Loading...</p>
   </div>
 
-  <script>
-    // This is my API key setup from the World Weather Online website
-    const apiKey = "85a4ce8b9cbb48af8c641914252310";
-    const city = "Puerto Princesa";
+  
+ <script>
+  const apiKey = "bad60619ca006eb7157e08b43a400527";
+  const city = "Puerto Princesa";
 
-    const clarityMessages = {
-      "Clear": "The sky is clear and bright. Perfect for outdoor activities!",
-      "Partly Cloudy": "Some clouds in the sky, but it’s still a nice day.",
-      "Cloudy": "The sky is fully covered with clouds. Might feel a bit gloomy.",
-      "Stormy": "Storms expected. Best to stay indoors and safe."
-    };
+  const clarityMessages = {
+  "Clear": "The sky is clear and bright. Perfect for outdoor activities!",
+  "Clouds": "Some clouds in the sky, but it’s still a nice day.",
+  "Rain": "Rain is expected. Best to stay indoors and safe.",
+  "Storm": "Storms expected. Stay safe indoors."
+};
 
-    const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    const ctx = document.getElementById('tempChart').getContext('2d');
+  const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const ctx = document.getElementById('tempChart').getContext('2d');
 
-    // This creates the temperature chart and prepares it for updating
-    const tempChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: "Temperature (°C)",
-          data: [],
-          backgroundColor: "skyblue",
-          borderColor: "dodgerblue",
-          borderWidth: 2,
-          fill: true,
-          tension: 0.3,
-          pointRadius: 5,
-          pointBackgroundColor: "blue"
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: { beginAtZero: false }
-        }
-      }
-    });
+  const tempChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+    labels: labels,
+    datasets: [{
+      label: "Temperature (°C)",
+      data: [],
+      backgroundColor: "skyblue",
+      borderColor: "dodgerblue",
+      borderWidth: 2,
+      fill: true,
+      tension: 0.3,
+      pointRadius: 5,
+      pointBackgroundColor: "blue"
+    }]
+  },
+    options: { 
+      responsive: true, 
+      scales: { y: { beginAtZero: false } } 
+  }
+});
 
-    // This fetches the real 7-day weather data from the API
-    async function fetchWeather() {
-      try {
-        const url = `https://api.worldweatheronline.com/premium/v1/weather.ashx?key=${apiKey}&q=${city}&format=json&num_of_days=7`;
-		`;
-        const response = await fetch(url);
-        if (!response.ok) throw new Error("Weather data unavailable");
-        const data = await response.json();
+   async function fetchWeather() {
+    try {
+      // OpenWeatherMap 7-day forecast URL
+      const url = `https://api.openweathermap.org/data/2.5/forecast/daily?q=${city}&units=metric&cnt=7&appid=${apiKey}`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Weather data unavailable");
+      const data = await response.json();
 
-        const current = data.data.current_condition[0];
-        const weatherDesc = current.weatherDesc[0].value;
-        const avgTempC = parseFloat(current.temp_C);
+    // Current weather description
+      const weatherMain = data.list[0].weather[0].main;
+      document.getElementById("cloud-status").textContent = weatherMain;
 
-        // This updates the cloud description and clarity message in the webpage
-        document.getElementById("cloud-status").textContent = weatherDesc;
+    // Clarity message
+      let message = clarityMessages["Clouds"];
+      if (weatherMain.includes("Clear")) message = clarityMessages["Clear"];
+      else if (weatherMain.includes("Rain")) message = clarityMessages["Rain"];
+      else if (weatherMain.includes("Storm")) message = clarityMessages["Storm"];
+      document.getElementById("clarity-report").textContent = message;
 
-        let message = clarityMessages["Cloudy"];
-        if (weatherDesc.includes("Clear")) message = clarityMessages["Clear"];
-        else if (weatherDesc.includes("Partly")) message = clarityMessages["Partly Cloudy"];
-        else if (weatherDesc.includes("Rain") || weatherDesc.includes("Storm")) message = clarityMessages["Stormy"];
-        document.getElementById("clarity-report").textContent = message;
+    // 7-day temperatures
+      const days = data.list.map(day => day.temp.day);
+      tempChart.data.datasets[0].data = days;
+      tempChart.update();
 
-        // This updates the chart with 7-day forecast temperatures
-        const days = data.data.weather.map(day => parseFloat(day.avgtempC));
-        tempChart.data.datasets[0].data = days;
-        tempChart.update();
+    } catch (error) {
+      document.getElementById("cloud-status").textContent = "Unable to fetch weather data.";
+      document.getElementById("clarity-report").textContent = "Please check your API key or internet connection.";
+      console.error("Weather fetch error:", error);
+  }
+}
 
-      } catch (error) {
-        document.getElementById("cloud-status").textContent = "Unable to fetch weather data.";
-        document.getElementById("clarity-report").textContent = "Please check your API key or internet connection.";
-        console.error("Weather fetch error:", error);
-      }
-    }
-
-    fetchWeather();
-  </script>
-
+  fetchWeather();
+ </script>
 </body>
 </html>
-
-
-
-
-
-
+	

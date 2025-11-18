@@ -71,7 +71,7 @@
         label: "Temperature (°C)",
         data: [],
         backgroundColor: "lightblue",
-        borderColor: "lightblue",
+        borderColor: "blue",
         borderWidth: 2,
         fill: true,
         tension: 0.3,

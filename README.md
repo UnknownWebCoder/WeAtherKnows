@@ -48,7 +48,7 @@
     <p id="clarity-report">Loading...</p>
   </div>
 
-  <script>
+ <script>
   const lat = 9.7401;   // Puerto Princesa latitude
   const lon = 118.7350; // Puerto Princesa longitude
 
@@ -122,6 +122,7 @@
   }
 
   fetchWeather();
-  </script>
+  setInterval(fetchWeather, 600000);
+ </script>
 </body>
 </html>

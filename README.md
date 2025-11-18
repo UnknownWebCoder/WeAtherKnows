@@ -70,13 +70,13 @@
       datasets: [{
         label: "Temperature (°C)",
         data: [],
-        backgroundColor: "blue",
-        borderColor: "blue",
+        backgroundColor: "lightblue",
+        borderColor: "lightblue",
         borderWidth: 2,
         fill: true,
         tension: 0.3,
         pointRadius: 5,
-        pointBackgroundColor: "blue"
+        pointBackgroundColor: "lightblue"
       }]
     },
     options: {

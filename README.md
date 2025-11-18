@@ -49,7 +49,7 @@
   </div>
 
   <script>
-    const apiKey = "438aa9c7ef1f7fd6d586ef5829383049";
+    const apiKey = "bad60619ca006eb7157e08b43a400527";
     const lat = 9.7401;  // Puerto Princesa latitude
     const lon = 118.7350; // Puerto Princesa longitude
 

@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
   <title>Weather Knows the 3 C's</title>
@@ -48,53 +49,36 @@
   </div>
 
   <script>
-    const apiKey = "bad60619ca006eb7157e08b43a400527";
+    const apiKey = "438aa9c7ef1f7fd6d586ef5829383049";
     const lat = 9.7401;  // Puerto Princesa latitude
     const lon = 118.7350; // Puerto Princesa longitude
 
     const clarityMessages = {
       "Clear": "The sky is clear and bright. Perfect for outdoor activities!",
-      "Clouds": "Some clouds in the sky, but it’s still a nice day.",
+      "Partly Cloudy": "Some clouds in the sky, but it’s still a nice day.",
+      "Clouds": "The sky is fully covered with clouds. Might feel a bit gloomy.",
       "Rain": "Rain is expected. Best to stay indoors and safe.",
       "Storm": "Storms expected. Stay safe indoors."
     };
 
-    // Get weekday labels dynamically
-    const labels = [];
-    const today = new Date();
-    for(let i = 0; i < 7; i++){
-      const day = new Date();
-      day.setDate(today.getDate() + i);
-      labels.push(day.toLocaleDateString('en-US', { weekday: 'short' }));
-    }
-
+    const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     const ctx = document.getElementById('tempChart').getContext('2d');
+
     const tempChart = new Chart(ctx, {
       type: 'line',
       data: {
         labels: labels,
-        datasets: [
-          {
-            label: "Max Temp (°C)",
-            data: [],
-            backgroundColor: "rgba(255,99,132,0.2)",
-            borderColor: "rgba(255,99,132,1)",
-            borderWidth: 2,
-            fill: true,
-            tension: 0.3,
-            pointRadius: 5
-          },
-          {
-            label: "Min Temp (°C)",
-            data: [],
-            backgroundColor: "rgba(54,162,235,0.2)",
-            borderColor: "rgba(54,162,235,1)",
-            borderWidth: 2,
-            fill: true,
-            tension: 0.3,
-            pointRadius: 5
-          }
-        ]
+        datasets: [{
+          label: "Temperature (°C)",
+          data: [],
+          backgroundColor: "blue",
+          borderColor: "blue",
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3,
+          pointRadius: 5,
+          pointBackgroundColor: "blue"
+        }]
       },
       options: {
         responsive: true,
@@ -109,22 +93,20 @@
         if (!response.ok) throw new Error("Weather data unavailable");
         const data = await response.json();
 
-        // Current weather (first day)
+        // Current weather
         const weatherMain = data.daily[0].weather[0].main;
         document.getElementById("cloud-status").textContent = weatherMain;
 
         let message = clarityMessages["Clouds"];
         if (weatherMain.includes("Clear")) message = clarityMessages["Clear"];
+        else if (weatherMain.includes("Partly")) message = clarityMessages["Partly Cloudy"];
         else if (weatherMain.includes("Rain")) message = clarityMessages["Rain"];
         else if (weatherMain.includes("Storm")) message = clarityMessages["Storm"];
         document.getElementById("clarity-report").textContent = message;
 
-        // 7-day temperatures
-        const maxTemps = data.daily.slice(0,7).map(day => day.temp.max);
-        const minTemps = data.daily.slice(0,7).map(day => day.temp.min);
-
-        tempChart.data.datasets[0].data = maxTemps;
-        tempChart.data.datasets[1].data = minTemps;
+        // 7-day average temperatures
+        const temps = data.daily.slice(0,7).map(day => day.temp.day);
+        tempChart.data.datasets[0].data = temps;
         tempChart.update();
 
       } catch (error) {

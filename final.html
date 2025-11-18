@@ -59,24 +59,42 @@
       "Storm": "Storms expected. Stay safe indoors."
     };
 
-    const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    const ctx = document.getElementById('tempChart').getContext('2d');
+    // Get weekday labels dynamically
+    const labels = [];
+    const today = new Date();
+    for(let i = 0; i < 7; i++){
+      const day = new Date();
+      day.setDate(today.getDate() + i);
+      labels.push(day.toLocaleDateString('en-US', { weekday: 'short' }));
+    }
 
+    const ctx = document.getElementById('tempChart').getContext('2d');
     const tempChart = new Chart(ctx, {
       type: 'line',
       data: {
         labels: labels,
-        datasets: [{
-          label: "Temperature (°C)",
-          data: [],
-          backgroundColor: "skyblue",
-          borderColor: "dodgerblue",
-          borderWidth: 2,
-          fill: true,
-          tension: 0.3,
-          pointRadius: 5,
-          pointBackgroundColor: "blue"
-        }]
+        datasets: [
+          {
+            label: "Max Temp (°C)",
+            data: [],
+            backgroundColor: "rgba(255,99,132,0.2)",
+            borderColor: "rgba(255,99,132,1)",
+            borderWidth: 2,
+            fill: true,
+            tension: 0.3,
+            pointRadius: 5
+          },
+          {
+            label: "Min Temp (°C)",
+            data: [],
+            backgroundColor: "rgba(54,162,235,0.2)",
+            borderColor: "rgba(54,162,235,1)",
+            borderWidth: 2,
+            fill: true,
+            tension: 0.3,
+            pointRadius: 5
+          }
+        ]
       },
       options: {
         responsive: true,
@@ -102,8 +120,11 @@
         document.getElementById("clarity-report").textContent = message;
 
         // 7-day temperatures
-        const days = data.daily.slice(0,7).map(day => day.temp.day);
-        tempChart.data.datasets[0].data = days;
+        const maxTemps = data.daily.slice(0,7).map(day => day.temp.max);
+        const minTemps = data.daily.slice(0,7).map(day => day.temp.min);
+
+        tempChart.data.datasets[0].data = maxTemps;
+        tempChart.data.datasets[1].data = minTemps;
         tempChart.update();
 
       } catch (error) {

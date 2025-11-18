@@ -48,7 +48,7 @@
   </div>
 
   <script>
-    // This is my API key setup from the World Weather Online website
+    // This is my API key setup from the World Weather Online Website
     const apiKey = "85a4ce8b9cbb48af8c641914252310";
     const city = "Puerto Princesa";
 
